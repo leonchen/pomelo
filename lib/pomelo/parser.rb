@@ -20,8 +20,7 @@ module Pomelo
       if print_only?
         puts run_commands
       else
-        puts run_commands
-        #system run_commands
+        system run_commands
       end
     end
 
