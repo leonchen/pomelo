@@ -1,0 +1,85 @@
+[networks]
+  # required, the loopback device, normally will be lo or lo0
+  loopback = "lo"
+  allow_icmp = true
+
+  [networks.internet]
+    ip = "111.111.111.111"
+    dev = "eth0"
+
+  [networks.locals]
+
+    [networks.locals.office]
+      net = "192.168.0.0/24"
+      dev = "eth1"
+    [networks.locals.guest]
+      net = "192.168.1.0/24"
+      dev = "eth1"
+
+  [networks.externals]
+    [networks.externals.vpn]
+      host = "192.168.99.2/24"
+      dev = "tun0"
+
+# custom host/ip ranges definitions
+[groups]
+  [groups.router]
+    host = "192.168.0.1"
+  [groups.www]
+    host = "192.168.0.2"
+  [groups.users]
+    range = "192.168.0.100-192.168.0.199"
+
+
+[traffic]
+  # default iptables rule, allow or deny 
+  # if you set this to be deny, you will
+  # have to manually set the ports
+  # in the ports section
+  global = "deny"
+
+
+# openning ports on router
+# not necessary when traffic.global is "allow"
+[[ports]]
+  protocol = "tcp"
+  port = 22
+  dev = "eth0"
+[[ports]]
+  protocol = "tcp"
+  port = 8080
+  dev = "eth0"
+[[ports]]
+  protocol = "tcp"
+  port = 443 
+  dev = "eth0"
+
+
+# rules
+[[rules]]
+  # access vpns for users
+  method = "gateway"
+  from = "#{groups.users}"
+  to = "#{networks.externals.vpn}"
+
+# gateway settings
+[[rules]]
+  method = "gateway"
+  from = "#{networks.locals.office}"
+  to = "#{networks.internet}"
+[[rules]]
+  method = "gateway"
+  from = "#{networks.locals.guest}"
+  to = "#{networks.internet}"
+
+# port forwarding
+[[rules]]
+  method = "forward"
+  from = 8080 
+  protocol = "tcp"
+  to = "#{groups.www.host}:80"
+[[rules]]
+  method = "forward"
+  from = "50000:60000"
+  protocol = "tcp"
+  to = "#{groups.www.host}"

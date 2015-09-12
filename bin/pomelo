@@ -1,0 +1,6 @@
+#! /usr/bin/env ruby
+
+require 'pomelo'
+
+p = Pomelo.from_argv(ARGV)
+p.run
